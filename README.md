@@ -31,6 +31,10 @@ Animating sequence diagram.
 ## Installation
 
 ```sh
+pip install animate_puml 
+pip install pillow
+pip install py-executable-checklist
+pip install pygifsicle
 pip install animate-puml
 ```
 
