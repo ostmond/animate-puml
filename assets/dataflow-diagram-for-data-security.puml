@@ -1,0 +1,73 @@
+@startuml
+left to right direction
+
+!$disabled_arrow = "#lightgray"
+!$enabled_arrow = "thickness=2"
+
+!$disabled = "<color:lightgray><size:14>"
+!$enabled = "<size:14>"
+
+' Define the nodes
+rectangle "Customer on premise" {
+  database Archive {
+
+  }
+  database [PVS/KIS] {
+
+  }
+  [Browser]
+}
+
+rectangle "Thieme/Thieme Compliance Cloud" {
+    rectangle "CaaS Cloud BE" {
+        usecase "extract patient data"
+        usecase "parse JWT"
+        usecase "vorausfüllen"
+        usecase "generate PDF"
+    }
+    rectangle "TAAL (Keycloak)"
+    database "Key Vault"
+    rectangle "FHIR Server" {
+        rectangle "FHIR REST" {
+            usecase "verschlüsseln"
+            usecase "entschlüsseln"
+        }
+        database "FHIR DB" {
+            [Patientendaten]
+            [Bogen]
+            [Zuweisung]
+            [Antwort]
+        }
+    }
+}
+
+[Thieme/Thieme Compliance Cloud] -right[hidden]-> [Customer on premise]
+' Define relationships
+' start
+[PVS/KIS] -[$disabled_arrow]-> [extract patient data] : $disabled Patientendaten via FHIR in TLS, HL7v2 in VPN or URL String
+[extract patient data] -[$disabled_arrow]-> [verschlüsseln]: $disabled Patientendaten
+[verschlüsseln] -[$disabled_arrow]-> [Patientendaten]: $disabled verschlüsselte Patientdaten 
+[Browser] -[$disabled_arrow]-> [TAAL (Keycloak)] : $disabled Benutzername + Passwort
+[TAAL (Keycloak)] -[$disabled_arrow]-> [Browser] : $disabled JWT (Id + roles)
+[Browser] -[$disabled_arrow]-> [parse JWT]: $disabled JWT + Zuweisung
+[parse JWT] -[$disabled_arrow]-> [verschlüsseln]: $disabled Zuweisung
+[verschlüsseln] -[$disabled_arrow]-> [Zuweisung]: $disabled verschlüsselte Zuweisung
+[Zuweisung] -[$disabled_arrow]-> [entschlüsseln]: $disabled verschlüsselte Zuweisung
+[Bogen] -[$disabled_arrow]-> [entschlüsseln]: $disabled verschlüsselter Bogen
+[Patientendaten] -[$disabled_arrow]-> [entschlüsseln]: $disabled verschlüsselte Patientendaten
+[entschlüsseln] -[$disabled_arrow]-> [vorausfüllen]: $disabled Zuweisung + Bogen + Patientendaten
+[vorausfüllen] -[$disabled_arrow]-> [Browser]: $disabled vorausgefüllte Zuweisung + Bogen + Patientendaten
+[Browser] -[$disabled_arrow]-> [parse JWT] : $disabled JWT + Antwort
+[CaaS Cloud BE] -[$disabled_arrow]-> [verschlüsseln] : $disabled Antwort
+[verschlüsseln] -[$disabled_arrow]-> [Antwort]: $disabled Antwort
+[Antwort] -[$disabled_arrow]-> [entschlüsseln]: $disabled Antwort
+[entschlüsseln] -[$disabled_arrow]-> [generate PDF]: $disabled Antwort
+[generate PDF] -[$disabled_arrow]-> [Archive]: $disabled PDF/A and/or FHIR-Questionnaire and QuestionnaireResponse
+' end
+[verschlüsseln] -- [Key Vault]
+[entschlüsseln] -- [Key Vault]
+
+
+
+@enduml
+

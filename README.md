@@ -39,6 +39,11 @@ pip install animate-puml
 ```
 
 ## Usage
+My usage
+
+```shell
+python3 animate-puml -i ./doc/architecture/security.puml -o ./doc/architecture/security-puml.gif
+```
 
 Given an example PlantUML document in `assets/security.puml`:
 
